@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Define an Enum for the expense categories
+enum Category {
+  Food
+  Travel
+  Office
+  Other
+}
+
+// Define an Enum for payment status
+enum PaymentStatus {
+  Paid
+  Pending
+  Reimbursable
+  Recurring
+}
+
+// Define the User model
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  expenses Expense[]
+}
+
+// Define the Expense model
+model Expense {
+  id             Int           @id @default(autoincrement())
+  description    String
+  base_amount    Float
+  tax_rate       Float
+  category       Category
+  payment_status PaymentStatus @default(Pending)
+  createdAt      DateTime      @default(now())
+  userId         Int
+  user           User          @relation(fields: [userId], references: [id])
+}
