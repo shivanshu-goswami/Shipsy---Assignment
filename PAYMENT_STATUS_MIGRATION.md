@@ -32,46 +32,35 @@ OR if in development mode:
 npx prisma migrate dev
 ```
 
-## Database Schema Design
+## What Was Updated
 
-### User Model
-```prisma
-model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  password String
-  expenses Expense[]
-}
-```
+### Frontend (Dashboard)
+- ✅ Form: Replaced checkbox with dropdown selector
+- ✅ Filter: Updated to show all 4 payment status options
+- ✅ Table: Now displays colored badges for each status
+- ✅ State Management: Updated to use `payment_status` instead of `is_reimbursed`
 
-### Expense Model  
-```prisma
-model Expense {
-  id             Int           @id @default(autoincrement())
-  description    String
-  base_amount    Float
-  tax_rate       Float
-  category       Category
-  payment_status PaymentStatus @default(Pending)
-  createdAt      DateTime      @default(now())
-  userId         Int
-  user           User          @relation(fields: [userId], references: [id])
-}
-```
+### Backend (API)
+- ✅ POST `/api/expenses`: Accepts `payment_status` field
+- ✅ PUT `/api/expenses/[id]`: Updates `payment_status` field
+- ✅ GET `/api/expenses`: Filters by `payment_status`
+- ✅ Validation: Ensures only valid status values are accepted
 
-### Enums
-```prisma
-enum Category {
-  Food
-  Travel
-  Office
-  Other
-}
+### Database Schema
+- ✅ Prisma Schema: Updated with new `PaymentStatus` enum
+- ✅ Migration: Ready to apply when database is accessible
 
-enum PaymentStatus {
-  Paid
-  Pending
-  Reimbursable
-  Recurring
-}
-```
+## Testing
+
+After migration:
+1. Verify existing expenses show correct payment status
+2. Create new expense with each status type
+3. Test filtering by each status
+4. Test editing expense status
+
+## Rollback (If Needed)
+
+If you need to rollback:
+1. Keep a database backup before migrating
+2. Revert the Prisma schema changes
+3. Create a new migration to restore `is_reimbursed`

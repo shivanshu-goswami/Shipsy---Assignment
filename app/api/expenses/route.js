@@ -67,41 +67,81 @@ export async function POST(request) {
     }
 
     // Use prisma to create a new expense, connecting it to the user's id.
+    // Temporarily support both old (is_reimbursed) and new (payment_status) schema
     const expenseData = {
       description,
       base_amount: parseFloat(base_amount),
       tax_rate: parseFloat(tax_rate),
       category,
-      payment_status: payment_status || 'Pending',
       userId: userId
     };
     
-    const expense = await prisma.expense.create({
-      data: expenseData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true
+    // Try to use payment_status (new schema), fallback to is_reimbursed (old schema)
+    try {
+      expenseData.payment_status = payment_status || 'Pending';
+      const expense = await prisma.expense.create({
+        data: expenseData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true
+            }
           }
         }
+      });
+
+      // Calculate total_amount
+      const total_amount = expense.base_amount + (expense.base_amount * expense.tax_rate);
+
+      // Return the new expense as JSON with a 201 status code.
+      return NextResponse.json(
+        {
+          message: 'Expense created successfully',
+          expense: {
+            ...expense,
+            total_amount,
+            // Add payment_status mapping for old schema
+            payment_status: expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending')
+          }
+        },
+        { status: 201 }
+      );
+    } catch (schemaError) {
+      // If payment_status field doesn't exist yet, try with old schema
+      if (schemaError.message?.includes('payment_status')) {
+        delete expenseData.payment_status;
+        // Map payment_status to is_reimbursed for old schema
+        expenseData.is_reimbursed = payment_status === 'Paid';
+        
+        const expense = await prisma.expense.create({
+          data: expenseData,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true
+              }
+            }
+          }
+        });
+
+        const total_amount = expense.base_amount + (expense.base_amount * expense.tax_rate);
+
+        return NextResponse.json(
+          {
+            message: 'Expense created successfully',
+            expense: {
+              ...expense,
+              total_amount,
+              payment_status: expense.is_reimbursed ? 'Paid' : 'Pending'
+            }
+          },
+          { status: 201 }
+        );
       }
-    });
-
-    // Calculate total_amount
-    const total_amount = expense.base_amount + (expense.base_amount * expense.tax_rate);
-
-    // Return the new expense as JSON with a 201 status code.
-    return NextResponse.json(
-      {
-        message: 'Expense created successfully',
-        expense: {
-          ...expense,
-          total_amount
-        }
-      },
-      { status: 201 }
-    );
+      throw schemaError;
+    }
   } catch (error) {
     console.error('Create expense error:', error);
     return NextResponse.json(
@@ -145,8 +185,14 @@ export async function GET(request) {
       where.category = category;
     }
 
+    // Try to filter by payment_status (new schema) or is_reimbursed (old schema)
     if (payment_status) {
-      where.payment_status = payment_status;
+      try {
+        where.payment_status = payment_status;
+      } catch {
+        // Fallback to old schema
+        where.is_reimbursed = payment_status === 'Paid';
+      }
     }
 
     // Add search functionality - search in description field
@@ -190,10 +236,12 @@ export async function GET(request) {
     const totalCount = await prisma.expense.count({ where });
     const totalPages = Math.ceil(totalCount / limit);
 
-    // Map over the fetched expenses to add the calculated 'total_amount' field
+    // Map over the fetched expenses to add the calculated 'total_amount' field and payment_status mapping
     const expensesWithTotal = expenses.map(expense => ({
       ...expense,
-      total_amount: expense.base_amount + (expense.base_amount * expense.tax_rate)
+      total_amount: expense.base_amount + (expense.base_amount * expense.tax_rate),
+      // Map payment_status for old schema compatibility
+      payment_status: expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending')
     }));
 
     // Return the modified list of expenses as JSON with complete pagination metadata.

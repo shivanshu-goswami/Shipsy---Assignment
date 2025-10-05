@@ -78,12 +78,14 @@ export async function GET(request, { params }) {
     // Calculate and add total_amount
     const total_amount = expense.base_amount + (expense.base_amount * expense.tax_rate);
 
-    // Return the expense
+    // Return the expense with payment_status mapping for old schema
     return NextResponse.json(
       { 
         expense: {
           ...expense,
-          total_amount
+          total_amount,
+          // Map payment_status for old schema compatibility
+          payment_status: expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending')
         }
       },
       { status: 200 }
@@ -153,7 +155,16 @@ export async function PUT(request, { params }) {
     if (base_amount !== undefined) updateData.base_amount = parseFloat(base_amount);
     if (tax_rate !== undefined) updateData.tax_rate = parseFloat(tax_rate);
     if (category !== undefined) updateData.category = category;
-    if (payment_status !== undefined) updateData.payment_status = payment_status;
+    
+    // Try new schema first, fallback to old schema
+    if (payment_status !== undefined) {
+      try {
+        updateData.payment_status = payment_status;
+      } catch {
+        // Fallback to old schema
+        updateData.is_reimbursed = payment_status === 'Paid';
+      }
+    }
 
     // Use prisma to update the expense, but include a 'where' clause to ensure BOTH the expense ID matches AND the userId matches the current user's ID.
     const updatedExpense = await prisma.expense.updateMany({
@@ -188,13 +199,15 @@ export async function PUT(request, { params }) {
     // Calculate and add total_amount
     const total_amount = expense.base_amount + (expense.base_amount * expense.tax_rate);
 
-    // Return the updated expense as JSON.
+    // Return the updated expense as JSON with payment_status mapping for old schema.
     return NextResponse.json(
       {
         message: 'Expense updated successfully',
         expense: {
           ...expense,
-          total_amount
+          total_amount,
+          // Map payment_status for old schema compatibility
+          payment_status: expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending')
         }
       },
       { status: 200 }

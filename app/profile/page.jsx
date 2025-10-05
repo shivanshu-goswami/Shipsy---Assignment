@@ -10,7 +10,8 @@ export default function ProfilePage() {
     totalAmount: 0,
     byCategory: {},
     byPaymentStatus: {},
-    recentExpenses: []
+    recentExpenses: [],
+    monthlyTrend: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -52,20 +53,13 @@ export default function ProfilePage() {
     let totalAmount = 0;
 
     expenses.forEach(expense => {
-      // Category summary
-      if (!byCategory[expense.category]) {
-        byCategory[expense.category] = { count: 0, amount: 0 };
-      }
-      byCategory[expense.category].count++;
-      byCategory[expense.category].amount += expense.total_amount;
-
-      // Payment status summary
-      if (!byPaymentStatus[expense.payment_status]) {
-        byPaymentStatus[expense.payment_status] = { count: 0, amount: 0 };
-      }
-      byPaymentStatus[expense.payment_status].count++;
-      byPaymentStatus[expense.payment_status].amount += expense.total_amount;
-
+      // By category
+      byCategory[expense.category] = (byCategory[expense.category] || 0) + expense.total_amount;
+      
+      // By payment status
+      const status = expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending');
+      byPaymentStatus[status] = (byPaymentStatus[status] || 0) + expense.total_amount;
+      
       totalAmount += expense.total_amount;
     });
 
@@ -83,164 +77,254 @@ export default function ProfilePage() {
     router.push('/login');
   };
 
+  const getCategoryIcon = (category) => {
+    const icons = {
+      'Food': '🍔',
+      'Travel': '✈️',
+      'Office': '🏢',
+      'Other': '📦'
+    };
+    return icons[category] || '📦';
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      'Paid': { bg: 'linear-gradient(135deg, #A8E6CF 0%, #7DD3C0 100%)', text: '#0D5C4F' },
+      'Pending': { bg: 'linear-gradient(135deg, #FFE5B4 0%, #FFD700 100%)', text: '#8B6F00' },
+      'Reimbursable': { bg: 'linear-gradient(135deg, #BBDEFB 0%, #90CAF9 100%)', text: '#0D47A1' },
+      'Recurring': { bg: 'linear-gradient(135deg, #E1BEE7 0%, #BA68C8 100%)', text: '#4A148C' }
+    };
+    return colors[status] || colors['Pending'];
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white"></div>
-          <p className="mt-6 text-white font-semibold text-lg">Loading profile...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%)'}}>
+        <div className="text-2xl font-bold" style={{color: '#1565C0'}}>Loading Profile...</div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600">
-      {/* Header */}
-      <header className="bg-white/10 backdrop-blur-md shadow-xl border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white drop-shadow-lg">👤 Profile Dashboard</h1>
-            <p className="text-sm mt-1 text-white/80 font-medium">Your expense analytics and insights</p>
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="px-6 py-2.5 text-white bg-white/20 rounded-xl hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg backdrop-blur-sm"
-            >
-              📊 Dashboard
-            </button>
-            <button
-              onClick={handleLogout}
-              className="px-6 py-2.5 text-white bg-red-500/80 rounded-xl hover:bg-red-600/80 focus:outline-none focus:ring-2 focus:ring-red-300 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg backdrop-blur-sm"
-            >
-              🚪 Logout
-            </button>
-          </div>
-        </div>
-      </header>
+  const categoryData = Object.entries(summary.byCategory);
+  const statusData = Object.entries(summary.byPaymentStatus);
+  const maxCategoryValue = Math.max(...categoryData.map(([, v]) => v), 1);
+  const maxStatusValue = Math.max(...statusData.map(([, v]) => v), 1);
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  return (
+    <div className="min-h-screen animate-gradient-xy relative overflow-hidden" style={{background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%)'}}>
+      {/* Animated background blobs */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob" style={{backgroundColor: '#BBDEFB'}}></div>
+      <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000" style={{backgroundColor: '#B3E5FC'}}></div>
+      <div className="absolute bottom-0 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000" style={{backgroundColor: '#C5CAE9'}}></div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen backdrop-blur-sm bg-white/5">
+        {/* Header */}
+        <header className="backdrop-blur-xl shadow-xl border-b border-white/40 sticky top-0 z-50" style={{backgroundColor: 'rgba(144, 202, 249, 0.25)'}}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
+            <div className="animate-slideIn">
+              <h1 className="text-3xl font-bold drop-shadow-sm" style={{color: '#1565C0'}}>📊 Profile Overview</h1>
+              <p className="text-sm mt-1 font-medium" style={{color: '#1976D2'}}>Your expense analytics and insights</p>
+            </div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="px-6 py-2.5 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg"
+                style={{background: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)'}}
+              >
+                📋 Dashboard
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-6 py-2.5 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg"
+                style={{background: 'linear-gradient(135deg, #1976D2 0%, #1565C0 100%)'}}
+              >
+                🚪 Logout
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* User Info Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-8 border border-white/20">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <span className="text-2xl mr-3">👤</span>
-                User Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">Email</label>
-                  <p className="text-lg font-semibold text-gray-900">{user?.email}</p>
+          <div className="mb-8 animate-fadeIn">
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <div className="flex items-center space-x-4">
+                <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl" style={{background: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)'}}>
+                  👤
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-600">Total Expenses</label>
-                  <p className="text-2xl font-bold text-indigo-600">{summary.totalExpenses}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600">Total Amount Spent</label>
-                  <p className="text-2xl font-bold text-green-600">₹{summary.totalAmount.toFixed(2)}</p>
+                  <h2 className="text-2xl font-bold" style={{color: '#1565C0'}}>{user?.email}</h2>
+                  <p className="text-gray-600">Member since {new Date().toLocaleDateString()}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Analytics Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-8 border border-white/20">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <span className="text-2xl mr-3">📊</span>
-                Expense Analytics
-              </h2>
-
-              {/* Category Breakdown */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">💼 By Category</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(summary.byCategory).map(([category, data]) => (
-                    <div key={category} className="bg-gray-50 p-4 rounded-xl">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-700">
-                          {category === 'Food' && '🍔 '}
-                          {category === 'Travel' && '✈️ '}
-                          {category === 'Office' && '🏢 '}
-                          {category === 'Other' && '📦 '}
-                          {category}
-                        </span>
-                        <span className="text-sm text-gray-500">{data.count} expenses</span>
-                      </div>
-                      <p className="text-lg font-bold text-indigo-600">₹{data.amount.toFixed(2)}</p>
-                    </div>
-                  ))}
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Total Expenses */}
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl animate-scaleIn" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Expenses</p>
+                  <p className="text-3xl font-bold mt-2" style={{color: '#1565C0'}}>{summary.totalExpenses}</p>
                 </div>
+                <div className="text-5xl">📝</div>
               </div>
+            </div>
 
-              {/* Payment Status Breakdown */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">💳 By Payment Status</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(summary.byPaymentStatus).map(([status, data]) => (
-                    <div key={status} className="bg-gray-50 p-4 rounded-xl">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-700">
-                          {status === 'Paid' && '✅ '}
-                          {status === 'Pending' && '⏳ '}
-                          {status === 'Reimbursable' && '💰 '}
-                          {status === 'Recurring' && '🔄 '}
-                          {status}
-                        </span>
-                        <span className="text-sm text-gray-500">{data.count} expenses</span>
-                      </div>
-                      <p className="text-lg font-bold text-indigo-600">₹{data.amount.toFixed(2)}</p>
-                    </div>
-                  ))}
+            {/* Total Amount */}
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl animate-scaleIn animation-delay-2000" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Amount</p>
+                  <p className="text-3xl font-bold mt-2" style={{color: '#1565C0'}}>₹{summary.totalAmount.toFixed(2)}</p>
                 </div>
+                <div className="text-5xl">💰</div>
               </div>
+            </div>
 
-              {/* Recent Expenses */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">🕒 Recent Expenses</h3>
-                {summary.recentExpenses.length > 0 ? (
-                  <div className="space-y-3">
-                    {summary.recentExpenses.map((expense) => (
-                      <div key={expense.id} className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-gray-900">{expense.description}</p>
-                          <p className="text-sm text-gray-500">
-                            {expense.category === 'Food' && '🍔 '}
-                            {expense.category === 'Travel' && '✈️ '}
-                            {expense.category === 'Office' && '🏢 '}
-                            {expense.category === 'Other' && '📦 '}
-                            {expense.category} • {new Date(expense.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-indigo-600">₹{expense.total_amount.toFixed(2)}</p>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            expense.payment_status === 'Paid' ? 'bg-green-100 text-green-800' :
-                            expense.payment_status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                            expense.payment_status === 'Reimbursable' ? 'bg-blue-100 text-blue-800' :
-                            'bg-purple-100 text-purple-800'
-                          }`}>
-                            {expense.payment_status === 'Paid' && '✅ '}
-                            {expense.payment_status === 'Pending' && '⏳ '}
-                            {expense.payment_status === 'Reimbursable' && '💰 '}
-                            {expense.payment_status === 'Recurring' && '🔄 '}
-                            {expense.payment_status}
+            {/* Average per Expense */}
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl animate-scaleIn animation-delay-4000" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Average Expense</p>
+                  <p className="text-3xl font-bold mt-2" style={{color: '#1565C0'}}>
+                    ₹{summary.totalExpenses > 0 ? (summary.totalAmount / summary.totalExpenses).toFixed(2) : '0.00'}
+                  </p>
+                </div>
+                <div className="text-5xl">📊</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* Category Breakdown Chart */}
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl animate-fadeIn" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <h3 className="text-xl font-bold mb-6" style={{color: '#1565C0'}}>
+                📊 Expenses by Category
+              </h3>
+              <div className="space-y-4">
+                {categoryData.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No expenses yet</p>
+                ) : (
+                  categoryData.map(([category, amount]) => (
+                    <div key={category} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-700">
+                          {getCategoryIcon(category)} {category}
+                        </span>
+                        <span className="font-bold" style={{color: '#1565C0'}}>
+                          ₹{amount.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div
+                          className="h-4 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${(amount / maxCategoryValue) * 100}%`,
+                            background: 'linear-gradient(90deg, #42A5F5 0%, #1976D2 100%)'
+                          }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {((amount / summary.totalAmount) * 100).toFixed(1)}% of total
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Payment Status Chart */}
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl animate-fadeIn" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <h3 className="text-xl font-bold mb-6" style={{color: '#1565C0'}}>
+                💳 Payment Status Overview
+              </h3>
+              <div className="space-y-4">
+                {statusData.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No expenses yet</p>
+                ) : (
+                  statusData.map(([status, amount]) => {
+                    const colors = getStatusColor(status);
+                    return (
+                      <div key={status} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-gray-700">{status}</span>
+                          <span className="font-bold" style={{color: colors.text}}>
+                            ₹{amount.toFixed(2)}
                           </span>
                         </div>
+                        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                          <div
+                            className="h-4 rounded-full transition-all duration-500"
+                            style={{
+                              width: `${(amount / maxStatusValue) * 100}%`,
+                              background: colors.bg
+                            }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {((amount / summary.totalAmount) * 100).toFixed(1)}% of total
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-center py-8">No expenses yet. Start tracking your expenses!</p>
+                    );
+                  })
                 )}
               </div>
             </div>
           </div>
-        </div>
-      </main>
+
+          {/* Recent Expenses */}
+          <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl animate-fadeIn" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+            <h3 className="text-xl font-bold mb-6" style={{color: '#1565C0'}}>
+              🕒 Recent Expenses
+            </h3>
+            {summary.recentExpenses.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No expenses yet</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="border-b-2" style={{borderColor: '#90CAF9'}}>
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold" style={{color: '#0D47A1'}}>Description</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold" style={{color: '#0D47A1'}}>Category</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold" style={{color: '#0D47A1'}}>Amount</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold" style={{color: '#0D47A1'}}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {summary.recentExpenses.map((expense) => {
+                      const status = expense.payment_status || (expense.is_reimbursed ? 'Paid' : 'Pending');
+                      const colors = getStatusColor(status);
+                      return (
+                        <tr key={expense.id} className="hover:bg-blue-50/50 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{expense.description}</td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold" style={{background: 'rgba(187, 222, 251, 0.5)', color: '#0D47A1'}}>
+                              {getCategoryIcon(expense.category)} {expense.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-bold" style={{color: '#1565C0'}}>
+                            ₹{expense.total_amount.toFixed(2)}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold" style={{background: colors.bg, color: colors.text}}>
+                              {status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

@@ -219,24 +219,35 @@ export default function DashboardPage() {
 
   // Render the main component UI.
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 animate-fadeIn">
+    <div className="min-h-screen animate-gradient-xy relative overflow-hidden" style={{background: 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%)'}}>
+      {/* Animated background blobs */}
+      <div className="absolute top-0 left-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob" style={{backgroundColor: '#BBDEFB'}}></div>
+      <div className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000" style={{backgroundColor: '#B3E5FC'}}></div>
+      <div className="absolute bottom-0 left-1/2 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000" style={{backgroundColor: '#C5CAE9'}}></div>
+      
+      {/* Content wrapper with backdrop */}
+      <div className="relative z-10 min-h-screen backdrop-blur-sm bg-white/5 animate-fadeIn">
       {/* Header */}
-      <header className="bg-white/10 backdrop-blur-md shadow-xl border-b border-white/20 sticky top-0 z-50">
+      <header className="backdrop-blur-xl shadow-xl border-b border-white/40 sticky top-0 z-50" style={{backgroundColor: 'rgba(144, 202, 249, 0.25)'}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white drop-shadow-lg">💰 Expense Dashboard</h1>
-            <p className="text-sm mt-1 text-white/80 font-medium">Manage and track your expenses effortlessly</p>
+          <div className="animate-slideIn">
+            <h1 className="text-3xl font-bold drop-shadow-sm" style={{color: '#1565C0'}}>💰 Expense Dashboard</h1>
+            <p className="text-sm mt-1 font-medium" style={{color: '#1976D2'}}>Manage and track your expenses effortlessly</p>
           </div>
           <div className="flex space-x-3">
             <button
               onClick={() => router.push('/profile')}
-              className="px-6 py-2.5 text-white bg-white/20 rounded-xl hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg backdrop-blur-sm"
+              className="px-6 py-2.5 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+              style={{background: 'linear-gradient(135deg, #42A5F5 0%, #1976D2 100%)'}}
             >
               📊 Profile
             </button>
             <button
               onClick={handleLogout}
-              className="px-6 py-2.5 text-white bg-red-500/80 rounded-xl hover:bg-red-600/80 focus:outline-none focus:ring-2 focus:ring-red-300 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg backdrop-blur-sm"
+              className="px-6 py-2.5 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transform hover:scale-105 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+              style={{background: 'linear-gradient(135deg, #1976D2 0%, #1565C0 100%)'}}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'linear-gradient(135deg, #1976D2 0%, #1565C0 100%)'}
             >
               🚪 Logout
             </button>
@@ -248,8 +259,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Form Section */}
           <div className="lg:col-span-1 animate-slideIn">
-            <div className="bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-8 border border-white/20">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-teal-700 to-cyan-700 bg-clip-text text-transparent mb-6 flex items-center drop-shadow">
                 <span className="text-2xl mr-3">{currentExpense ? '✏️' : '➕'}</span>
                 {currentExpense ? 'Edit Expense' : 'Create New Expense'}
               </h2>
@@ -258,7 +269,7 @@ export default function DashboardPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    📝 Description
+                    Description
                   </label>
                   <input
                     type="text"
@@ -337,29 +348,29 @@ export default function DashboardPage() {
                     <option value="Paid">✅ Paid</option>
                     <option value="Pending">⏳ Pending</option>
                     <option value="Reimbursable">💰 Reimbursable</option>
-                    <option value="Recurring">🔄 Recurring</option>
+                    <option value="Recurring">🔄 Recurring (Subscription)</option>
                   </select>
                 </div>
 
                 {/* Confirmation Checkbox */}
-                <div className="flex items-center p-4 rounded-xl border-2 transition-all duration-200" style={{borderColor: formData.isConfirmed ? '#6366f1' : '#E0E0E0', backgroundColor: formData.isConfirmed ? 'rgba(99, 102, 241, 0.1)' : 'rgba(0, 0, 0, 0.02)'}}>
+                <div className="flex items-center p-4 rounded-xl border-2 transition-all duration-200" style={{borderColor: formData.isConfirmed ? '#90CAF9' : '#E0E0E0', backgroundColor: formData.isConfirmed ? 'rgba(187, 222, 251, 0.1)' : 'rgba(0, 0, 0, 0.02)'}}>
                   <input
                     type="checkbox"
                     id="isConfirmed"
                     className="h-5 w-5 rounded-lg cursor-pointer transition-all duration-200"
-                    style={{accentColor: '#6366f1'}}
+                    style={{accentColor: '#1976D2'}}
                     checked={formData.isConfirmed}
                     onChange={(e) => setFormData({ ...formData, isConfirmed: e.target.checked })}
                   />
-                  <label htmlFor="isConfirmed" className="ml-3 block text-sm font-semibold cursor-pointer" style={{color: formData.isConfirmed ? '#6366f1' : '#666666'}}>
-                    ✅ Confirm expense details before submission
+                  <label htmlFor="isConfirmed" className="ml-3 block text-sm font-semibold cursor-pointer" style={{color: formData.isConfirmed ? '#1565C0' : '#666666'}}>
+                    ✅ Click here to confirm expense details before submission
                   </label>
                 </div>
 
                 <div className="flex space-x-3 pt-2">
                   <button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-105 transition-all duration-200 font-semibold shadow-lg"
+                    className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-105 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
                   >
                     {currentExpense ? '💾 Update' : '➕ Create'} Expense
                   </button>
@@ -367,7 +378,7 @@ export default function DashboardPage() {
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="px-6 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transform hover:scale-105 transition-all duration-200 font-semibold shadow-lg"
+                      className="px-6 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-xl hover:from-gray-500 hover:to-gray-600 transform hover:scale-105 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl"
                     >
                       ❌ Cancel
                     </button>
@@ -379,14 +390,15 @@ export default function DashboardPage() {
 
           {/* Expenses List Section */}
           <div className="lg:col-span-2 animate-scaleIn">
-            <div className="bg-white/95 backdrop-blur-md shadow-xl rounded-2xl p-8 border border-white/20">
-              <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+            <div className="backdrop-blur-xl bg-white/95 shadow-lg rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl" style={{borderColor: 'rgba(144, 202, 249, 0.5)'}}>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-teal-700 to-cyan-700 bg-clip-text text-transparent mb-6 flex items-center drop-shadow">
                 <span className="text-2xl mr-3">📊</span>
                 Your Expenses
               </h2>
 
-              {/* Search and Filter Controls */}
+              {/* Search, Filter, and Sort Controls */}
               <div className="mb-6 space-y-4">
+                {/* Search Bar */}
                 <div>
                   <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                     🔍 Search Description
@@ -399,15 +411,20 @@ export default function DashboardPage() {
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
-                      setCurrentPage(1);
+                      setCurrentPage(1); // Reset to first page when searching
                     }}
                   />
                 </div>
 
+                {/* Filters and Sort Row */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Category Filter */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🏷️ Category</label>
+                    <label htmlFor="filterCategory" className="block text-sm font-semibold text-gray-700 mb-2">
+                      🏷️ Category
+                    </label>
                     <select
+                      id="filterCategory"
                       className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:text-sm px-4 py-3 text-gray-900 bg-white/80 hover:bg-white cursor-pointer transition-all duration-200"
                       value={filterCategory}
                       onChange={(e) => {
@@ -423,9 +440,13 @@ export default function DashboardPage() {
                     </select>
                   </div>
 
+                  {/* Payment Status Filter */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">💳 Payment Status</label>
+                    <label htmlFor="filterPaymentStatus" className="block text-sm font-semibold text-gray-700 mb-2">
+                      💳 Payment Status
+                    </label>
                     <select
+                      id="filterPaymentStatus"
                       className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:text-sm px-4 py-3 text-gray-900 bg-white/80 hover:bg-white cursor-pointer transition-all duration-200"
                       value={filterPaymentStatus}
                       onChange={(e) => {
@@ -437,27 +458,35 @@ export default function DashboardPage() {
                       <option value="Paid">✅ Paid</option>
                       <option value="Pending">⏳ Pending</option>
                       <option value="Reimbursable">💰 Reimbursable</option>
-                      <option value="Recurring">🔄 Recurring</option>
+                      <option value="Recurring">🔄 Recurring (Subscription)</option>
                     </select>
                   </div>
 
+                  {/* Sort By */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔄 Sort By</label>
+                    <label htmlFor="sortBy" className="block text-sm font-semibold text-gray-700 mb-2">
+                      🔄 Sort By
+                    </label>
                     <select
+                      id="sortBy"
                       className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:text-sm px-4 py-3 text-gray-900 bg-white/80 hover:bg-white cursor-pointer transition-all duration-200"
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
                     >
                       <option value="createdAt">📅 Date</option>
-                      <option value="base_amount">💵 Amount</option>
+                      <option value="base_amount">💵 Base Amount</option>
                       <option value="description">📝 Description</option>
                       <option value="category">🏷️ Category</option>
                     </select>
                   </div>
 
+                  {/* Sort Order */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔽 Order</label>
+                    <label htmlFor="sortOrder" className="block text-sm font-semibold text-gray-700 mb-2">
+                      🔽 Order
+                    </label>
                     <select
+                      id="sortOrder"
                       className="w-full rounded-xl border-2 border-gray-200 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 sm:text-sm px-4 py-3 text-gray-900 bg-white/80 hover:bg-white cursor-pointer transition-all duration-200"
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value)}
@@ -471,7 +500,7 @@ export default function DashboardPage() {
 
               {/* Display success and error messages */}
               {error && (
-                <div className="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl shadow-lg animate-slideIn">
+                <div className="mb-6 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-xl shadow-lg animate-slideIn">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">⚠️</span>
                     <span className="font-semibold">{error}</span>
@@ -480,7 +509,7 @@ export default function DashboardPage() {
               )}
 
               {successMessage && (
-                <div className="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-xl shadow-lg animate-slideIn">
+                <div className="mb-6 bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-xl shadow-lg animate-slideIn">
                   <div className="flex items-center">
                     <span className="text-2xl mr-3">✅</span>
                     <span className="font-semibold">{successMessage}</span>
@@ -501,27 +530,42 @@ export default function DashboardPage() {
                   <p className="text-gray-400 mt-3 text-base">Create your first expense to get started!</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-2xl shadow-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                // Map over the expenses array to render a list or table.
+                <div className="overflow-x-auto overflow-y-auto max-h-[600px] rounded-2xl shadow-lg animate-fadeIn" style={{border: '1px solid rgba(144, 202, 249, 0.6)'}}>
+                  <table className="min-w-full divide-y divide-blue-100">
+                    <thead className="sticky top-0 z-10" style={{background: 'linear-gradient(90deg, #BBDEFB 0%, #90CAF9 50%, #BBDEFB 100%)'}}>
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Base Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tax Rate</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          📝 Description
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          🏷️ Category
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          💵 Base Amount
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          📊 Tax Rate
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          💰 Total Amount
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          💳 Payment Status
+                        </th>
+                        <th className="px-6 py-5 text-left text-xs font-bold uppercase tracking-wider" style={{color: '#0D47A1'}}>
+                          ⚙️ Actions
+                        </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white/95 backdrop-blur-sm divide-y divide-blue-50">{/* For each expense, display its details (description, total_amount). */}
                       {expenses.map((expense) => (
-                        <tr key={expense.id} className="hover:bg-gray-50">
+                        <tr key={expense.id} className="transition-all duration-200 hover:bg-blue-50/50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{expense.description}</div>
+                            <div className="text-sm font-semibold text-gray-900">{expense.description}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm" style={{background: 'linear-gradient(135deg, #BBDEFB 0%, #90CAF9 100%)', color: '#0D47A1'}}>
                               {expense.category === 'Food' && '🍔 '}
                               {expense.category === 'Travel' && '✈️ '}
                               {expense.category === 'Office' && '🏢 '}
@@ -529,39 +573,50 @@ export default function DashboardPage() {
                               {expense.category}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                             ₹{expense.base_amount.toFixed(2)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {(expense.tax_rate * 100).toFixed(0)}%
+                            <span className="font-medium">{(expense.tax_rate * 100).toFixed(0)}%</span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
-                            ₹{expense.total_amount.toFixed(2)}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className="font-bold text-indigo-600 text-base">
+                              ₹{expense.total_amount.toFixed(2)}
+                            </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
                             {expense.payment_status === 'Paid' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">✅ Paid</span>
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-sm">
+                                ✅ Paid
+                              </span>
                             )}
                             {expense.payment_status === 'Pending' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">⏳ Pending</span>
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 shadow-sm">
+                                ⏳ Pending
+                              </span>
                             )}
                             {expense.payment_status === 'Reimbursable' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">💰 Reimbursable</span>
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 shadow-sm">
+                                💰 Reimbursable
+                              </span>
                             )}
                             {expense.payment_status === 'Recurring' && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">🔄 Recurring</span>
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 shadow-sm">
+                                🔄 Recurring
+                              </span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            {/* Include 'Edit' and 'Delete' buttons for each expense. */}
                             <button
                               onClick={() => handleEdit(expense)}
-                              className="text-indigo-600 hover:text-indigo-900 bg-indigo-100 hover:bg-indigo-200 px-3 py-1 rounded-lg transition-all duration-200"
+                              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 font-semibold text-xs shadow-md hover:shadow-lg"
                             >
                               ✏️ Edit
                             </button>
                             <button
                               onClick={() => handleDelete(expense.id)}
-                              className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-3 py-1 rounded-lg transition-all duration-200"
+                              className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transform hover:scale-105 transition-all duration-200 font-semibold text-xs shadow-md hover:shadow-lg"
                             >
                               🗑️ Delete
                             </button>
@@ -574,41 +629,46 @@ export default function DashboardPage() {
               )}
 
               {/* Pagination Controls */}
-              {pagination && pagination.totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Showing page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalExpenses} total expenses)
+              {pagination && (
+                <div className="mt-8 flex items-center justify-between border-t-2 border-purple-100 pt-6 animate-fadeIn">
+                  <div className="text-sm font-semibold text-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 rounded-xl">
+                    📄 Showing page <span className="text-indigo-600">{pagination.currentPage}</span> of{' '}
+                    <span className="text-purple-600">{pagination.totalPages}</span>
+                    {' '}(<span className="text-pink-600">{pagination.totalExpenses}</span> total expenses)
                   </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={!pagination.hasPrevPage}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        pagination.hasPrevPage
-                          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      ⬅️ Previous
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                      disabled={!pagination.hasNextPage}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                        pagination.hasNextPage
-                          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                    >
-                      Next ➡️
-                    </button>
-                  </div>
+                  {pagination.totalPages > 1 && (
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={!pagination.hasPrevPage}
+                        className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                          pagination.hasPrevPage
+                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                        }`}
+                      >
+                        ⬅️ Previous
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={!pagination.hasNextPage}
+                        className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                          pagination.hasNextPage
+                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                        }`}
+                      >
+                        Next ➡️
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }
