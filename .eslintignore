@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+build/
+
+# Generated files
+app/generated/
+prisma/generated/
+
+# Environment files
+next-env.d.ts
+
+# Prisma client files (if generated elsewhere)
+**/prisma/client/
