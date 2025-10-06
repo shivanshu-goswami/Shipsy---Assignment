@@ -1,4 +1,5 @@
 # 💰 Expensify - Expense Tracking Application
+## LOGIN CREDENTIALS : Gmail id -> goswamishivanshu47@gmail.com , Password -> 123456
 
 A modern, full-stack expense tracking application built with Next.js, Prisma, and PostgreSQL. Manage your expenses with ease, featuring authentication, CRUD operations, advanced filtering, search, and sorting capabilities.
 
